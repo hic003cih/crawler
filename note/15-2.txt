@@ -1,0 +1,9 @@
+第一種 ->CSS選擇器
+1.使用CSS選擇器去取得各城市的資料
+2.用$('#cityList')去得到cityList元素(class="city-list")
+但這只取到整個城市元素的最外層,我們要取最內層a元素的城市名稱列表
+3.$('#cityList>dd>a'),就能得到href和innerText的值
+
+
+第二種 -> 正則表達式
+1.
