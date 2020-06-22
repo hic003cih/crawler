@@ -2,13 +2,13 @@ package main
 
 import (
 	"bufio"
-	"encoding"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 
 	"golang.org/x/net/html/charset"
+	"golang.org/x/text/encoding"
 	"golang.org/x/text/transform"
 )
 
@@ -49,6 +49,7 @@ func main() {
 
 //猜這個html的document的encoding是甚麼
 //這邊把原來的函數包裝一下
+//encoding.Encoding要引入golang.org/x/text/encoding才可以用
 func determineEncoding(r io.Reader) encoding.Encoding {
 	//直接讀io.Reader的話,1024的byte就沒辦法再讀了
 	//所以這邊用 bufio.NewReader(r).Peek來裝一下body的資料(Peek窺視)
@@ -62,6 +63,7 @@ func determineEncoding(r io.Reader) encoding.Encoding {
 	//name,和certain ->是否確認
 	//name和certain先不用管
 	e, _, _ := charset.DetermineEncoding(bytes, "")
+	fmt.Println(e)
 	//最後把e->encoding傳回
 	return e
 }
