@@ -53,6 +53,7 @@ func main() {
 func determineEncoding(r io.Reader) encoding.Encoding {
 	//直接讀io.Reader的話,1024的byte就沒辦法再讀了
 	//所以這邊用 bufio.NewReader(r).Peek來裝一下body的資料(Peek窺視)
+	//Peek(s)->取前面s位數,如下面的1024就是取前1024
 	bytes, err := bufio.NewReader(r).Peek(1024)
 	if err != nil {
 		panic(err)
@@ -63,7 +64,6 @@ func determineEncoding(r io.Reader) encoding.Encoding {
 	//name,和certain ->是否確認
 	//name和certain先不用管
 	e, _, _ := charset.DetermineEncoding(bytes, "")
-	fmt.Println(e)
 	//最後把e->encoding傳回
 	return e
 }

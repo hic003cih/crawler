@@ -1,0 +1,9 @@
+1.先取得網站的body
+2.檢查錯誤
+3.檢查網站回傳的status是否為OK,否則跳出程式
+4.將body傳到determineEncoding來辨別是哪種編碼(因為如果網站編碼不是utf8會亂碼)
+5.determineEncoding直接用io.Reader讀取body
+6.用bufio.NewReader(r).Peek(1024)將前1024的值抓出來
+7.用charset.DetermineEncoding來辨別HTML的Content-Type是甚麼,並回傳至main func
+8.在main func 中用transform.NewReader讀取body和determineEncoding傳回來的encoding.Encoding,得到用新編碼分析的body
+9.用ioutil.ReadAll將新得到的body讀取出來
