@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
@@ -44,7 +45,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("%s\n", all)
+	//fmt.Printf("%s", all)
+	printCityList(all)
 }
 
 //猜這個html的document的encoding是甚麼
@@ -66,4 +68,17 @@ func determineEncoding(r io.Reader) encoding.Encoding {
 	e, _, _ := charset.DetermineEncoding(bytes, "")
 	//最後把e->encoding傳回
 	return e
+}
+func printCityList(contents []byte) {
+	//使用正則表達式把城市名稱取出
+	//
+	re := regexp.MustCompile(`<a href="(http://www.zhenai.com/zhenghun/[0-9a-z]+)" [^>]*>([^<]+)</a>`)
+	matches := re.FindAll(contents, -1)
+	for _, m := range matches {
+		for _, subMatch := range m {
+			fmt.Printf("%s", subMatch)
+		}
+		fmt.Printf("%s\n", m)
+	}
+	fmt.Printf("matches found:%d\n", len(matches))
 }
