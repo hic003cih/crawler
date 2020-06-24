@@ -71,14 +71,28 @@ func determineEncoding(r io.Reader) encoding.Encoding {
 }
 func printCityList(contents []byte) {
 	//使用正則表達式把城市名稱取出
-	//
+	//正則表達式提取功能
+	//將所需要的部分用()框起來
 	re := regexp.MustCompile(`<a href="(http://www.zhenai.com/zhenghun/[0-9a-z]+)" [^>]*>([^<]+)</a>`)
-	matches := re.FindAll(contents, -1)
+
+	//FindAllString沒有辦法提取,
+	//改用FindAllStringSubmatch
+	//會返回一個二維的STRING slice
+	//每個匹配都佔一個項
+	//本身自己會佔一個,後面匹配的也會佔
+	//[55151@gmail.com 55151 gmail .com]
+	matches := re.FindAllSubmatch(contents, -1)
+
+	//把返回的二維打印出來
+	//完整的如下
+	//[<a href="http://www.zhenai.com/zhenghun/zunyi" data-v-2cb5b6a2>遵义</a> http://www.zhenai.com/zhenghun/zunyi 遵义]
+
+	//m[0]=<a href="http://www.zhenai.com/zhenghun/zunyi" data-v-2cb5b6a2>遵义</a>
+	//m[1]=http://www.zhenai.com/zhenghun/zunyi
+	//m[2]=遵义
 	for _, m := range matches {
-		for _, subMatch := range m {
-			fmt.Printf("%s", subMatch)
-		}
-		fmt.Printf("%s\n", m)
+
+		fmt.Printf("City:%s,URL:%s\n", m[2], m[1])
 	}
 	fmt.Printf("matches found:%d\n", len(matches))
 }
