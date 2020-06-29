@@ -3,7 +3,7 @@ package parser
 import (
 	"regexp"
 
-	"main/engine"
+	"../engine"
 )
 
 //把List內的url做常量使用
@@ -32,8 +32,8 @@ func ParseCityList(contents []byte) engine.ParseResult {
 	//m[1]=http://www.zhenai.com/zhenghun/zunyi
 	//m[2]=遵义
 	for _, m := range matches {
-		//把城市的名字用append做為一個items返回出去
-		result.Items = append(result.Items, m[2])
+		//把城市的名字用append做為一個items返回出去,把原本的值換成string丟出去
+		result.Items = append(result.Items, string(m[2]))
 		//把URL用append存到Result中返回
 		result.Requests = append(result.Requests, engine.Request{
 			Url:        string(m[1]),
