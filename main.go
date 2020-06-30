@@ -1,8 +1,8 @@
 package main
 
 import (
-	"ClassMCC/crawler/engine"
-	"ClassMCC/crawler/zhenai/parser"
+	"crawler/engine"
+	"crawler/zhenai/parser"
 )
 
 func main() {

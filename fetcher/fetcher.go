@@ -3,7 +3,6 @@ package fetcher
 import (
 	"bufio"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -33,28 +32,30 @@ func Fetch(url string) ([]byte, error) {
 	}
 	//因為不一定每個網頁都是gbk編碼
 	//用determineEncoding來辨別是哪種編碼
-	e := determineEncoding(resp.Body)
+	//每次執行,將body用bufio.NewReader存起來,再丟掉determineEncoding用
+	bodyReader := bufio.NewReader(resp.Body)
+	e := determineEncoding(bodyReader)
 
 	//使用transform庫
 	//將上面轉辨別好的e傳入這邊
-	utf8Reader := transform.NewReader(resp.Body, e.NewDecoder())
+	utf8Reader := transform.NewReader(bodyReader, e.NewDecoder())
 
 	//讀取轉換完以後utf8格式的reader
 	return ioutil.ReadAll(utf8Reader)
-	if err != nil {
-		panic(err)
-	}
+
 }
 
 //猜這個html的document的encoding是甚麼
 //這邊把原來的函數包裝一下
 //encoding.Encoding要引入golang.org/x/text/encoding才可以用
-func determineEncoding(r io.Reader) encoding.Encoding {
+func determineEncoding(r *bufio.Reader) encoding.Encoding {
 	//直接讀io.Reader的話,1024的byte就沒辦法再讀了
 	//所以這邊用 bufio.NewReader(r).Peek來裝一下body的資料(Peek窺視)
 	//Peek(s)->取前面s位數,如下面的1024就是取前1024
 	//如果是err,為了不讓程式掛掉,直接回傳一個unicode.UTF8,並將error打印出來
-	bytes, err := bufio.NewReader(r).Peek(1024)
+	//原本是直接將Body傳進來用io.Reader去讀,會造成一直都是Peek(1024)過後的檔案重複Peek(1024),前半段的資料越來越少
+	//因此先在主程式將body另存一個變數,再用bufio.NewReader(r)去把它讀出來,直接peak返回
+	bytes, err := r.Peek(1024)
 	if err != nil {
 		log.Printf("Fetcher error:%v", err)
 		return unicode.UTF8

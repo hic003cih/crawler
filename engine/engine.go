@@ -1,9 +1,8 @@
 package engine
 
 import (
+	"crawler/fetcher"
 	"log"
-
-	"./fetcher"
 )
 
 func Run(seeds ...Request) {

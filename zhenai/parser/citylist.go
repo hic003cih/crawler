@@ -1,16 +1,15 @@
 package parser
 
 import (
+	"crawler/engine"
 	"regexp"
-
-	"../engine"
 )
 
 //把List內的url做常量使用
 const cityListRe = `<a href="(http://www.zhenai.com/zhenghun/[0-9a-z]+)" [^>]*>([^<]+)</a>`
 
 //返回package engine內的ParseResult types
-func ParseCityList(contents []byte) engine.ParseResult {
+func ParseCityList(contents []byte) engine.ParserResult {
 	//使用正則表達式把城市名稱取出
 	//正則表達式提取功能
 	//將所需要的部分用()框起來
@@ -23,7 +22,7 @@ func ParseCityList(contents []byte) engine.ParseResult {
 	//本身自己會佔一個,後面匹配的也會佔
 	//[55151@gmail.com 55151 gmail .com]
 	matches := re.FindAllSubmatch(contents, -1)
-	result := engine.ParseResult{}
+	result := engine.ParserResult{}
 	//把返回的二維打印出來
 	//完整的如下
 	//[<a href="http://www.zhenai.com/zhenghun/zunyi" data-v-2cb5b6a2>遵义</a> http://www.zhenai.com/zhenghun/zunyi 遵义]
