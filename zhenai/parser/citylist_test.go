@@ -9,8 +9,7 @@ func TestParseCityList(t *testing.T) {
 
 	//防止網站改版或是測試的機器沒有對外的網路,所以把Fetch到的Body存下來成一個檔案,來進行測試比對
 	//contents, err := fetcher.Fetch("http://www.zhenai.com/zhenghun")
-	contents, err := ioutil.ReadFile(
-		"citylist_test_data.html")
+	contents, err := ioutil.ReadFile("citylist_test_data.html")
 	//有錯就跳出
 	if err != nil {
 		panic(err)
