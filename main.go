@@ -8,7 +8,8 @@ import (
 func main() {
 	//爬蟲引擎執行
 	engine.Run(engine.Request{
-		Url:        "http://www.zhenai.com/zhenghun",
+		//改用localhost生成的資料去執行
+		Url:        "http://localhost:8080/mock/www.zhenai.com/zhenghun",
 		ParserFunc: parser.ParseCityList,
 	})
 }

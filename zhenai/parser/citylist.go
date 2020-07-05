@@ -6,7 +6,9 @@ import (
 )
 
 //把List內的url做常量使用
-const cityListRe = `<a href="(http://www.zhenai.com/zhenghun/[0-9a-z]+)" [^>]*>([^<]+)</a>`
+const cityListRe = `<a href="(http://localhost:8080/mock/www.zhenai.com/zhenghun/[0-9a-z]+)"[^>]*>([^<]+)</a>`
+
+//const cityListRe = `<a href="(.*www\.zhenai\.com/zhenghun/[0-9a-z]+)"[^>]*>([^<]+)</a>`
 
 //返回package engine內的ParseResult types
 func ParseCityList(contents []byte) engine.ParserResult {

@@ -6,7 +6,7 @@ import (
 )
 
 //把City的url做常量使用
-const cityRe = `<a href="(http://album.zhenai.com/u/[0-9]+)" [^>]*>([^<]+)</a>`
+const cityRe = `<a href="(http://localhost:8080/mock/album.zhenai.com/u/[0-9]+)"[^>]*>([^<]+)</a>`
 
 //返回package engine內的ParseResult types
 func ParseCity(contents []byte) engine.ParserResult {
@@ -31,12 +31,17 @@ func ParseCity(contents []byte) engine.ParserResult {
 	//m[1]=http://www.zhenai.com/zhenghun/zunyi
 	//m[2]=遵义
 	for _, m := range matches {
+		name := string(m[2])
 		//把城市的名字用append做為一個items返回出去,把原本的值換成string丟出去
-		result.Items = append(result.Items, "User"+string(m[2]))
+		result.Items = append(result.Items, "User"+name)
 		//把URL用append存到Result中返回
 		result.Requests = append(result.Requests, engine.Request{
-			Url:        string(m[1]),
-			ParserFunc: engine.NilParser,
+			Url: string(m[1]),
+			//使用一個匿名函數,調用ParseProfile,並把抓到的name傳給ParseProfile
+			//要不然沒辦法把這邊取到的name傳給固定的ParserFunc形式
+			ParserFunc: func(c []byte) engine.ParserResult {
+				return ParseProfile(c, name)
+			},
 		})
 	}
 
