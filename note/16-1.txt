@@ -1,0 +1,7 @@
+1.並發版爬蟲,把Fetch和Parser提出來做成一個worker,用來做並發用
+2.並加入一個scheduler,用來做排程器
+3.scheduler傳Request給worker,然後worker得到Request.Items傳給Engine
+4.Engine再把Request丟給scheduler
+
+(Engine為一個Goroutine,scheduler為一個Goroutine,Worker為多個)
+(之間通過3個channel做連結)
