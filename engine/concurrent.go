@@ -1,8 +1,6 @@
 package engine
 
-import (
-	"fmt"
-)
+import "log"
 
 type ConcurrentEngine struct {
 	//這邊都要大寫,因為是給外面的人用的
@@ -15,21 +13,26 @@ type ConcurrentEngine struct {
 //使用者定義Scheduler要什麼,然後你自己去實現
 type Scheduler interface {
 	Submit(Request)
+	ConfigureMasterWorkerChan(chan Request)
 }
 
-func (e ConcurrentEngine) Run(seeds ...Request) {
-	//把每個Request傳到scheduler裡面
-	for _, r := range seeds {
-		e.Scheduler.Submit(r)
-	}
+func (e *ConcurrentEngine) Run(seeds ...Request) {
 
 	//輸入,把Request傳入
 	in := make(chan Request)
 	//輸出,ParseResult傳出
 	out := make(chan ParserResult)
+	//把in channel傳進去ConfigureWorkerChan
+	e.Scheduler.ConfigureMasterWorkerChan(in)
 	for i := 0; i < e.WorkerCount; i++ {
 		//把輸入和輸出chan傳入
 		createWorker(in, out)
+	}
+
+	//把每個Request傳到scheduler裡面
+	//等in channel和out channel都傳入以後再submit
+	for _, r := range seeds {
+		e.Scheduler.Submit(r)
 	}
 
 	for {
@@ -37,7 +40,7 @@ func (e ConcurrentEngine) Run(seeds ...Request) {
 		result := <-out
 		//然後把每個out輸出的resultItem輸出
 		for _, item := range result.Items {
-			fmt.Printf("Got item: %v", item)
+			log.Printf("Got item: %v", item)
 		}
 		//然後把每個out輸出的resultRequest,丟給Scheduler
 		for _, request := range result.Requests {
