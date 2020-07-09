@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"time"
 
 	"golang.org/x/net/html/charset"
 	"golang.org/x/text/encoding"
@@ -13,9 +14,13 @@ import (
 	"golang.org/x/text/transform"
 )
 
+//設定爬網站的時間
+var rateLimiter = time.Tick(100 * time.Millisecond)
+
 //把原本在main執行get網站body和檢查網站編碼的功能移過來
 //傳入要抓取的網址,並回傳處理過的byte,如果如出錯船error
 func Fetch(url string) ([]byte, error) {
+	<-rateLimiter
 	//取得網站body
 	resp, err := http.Get(url)
 	//錯誤時輸出錯誤

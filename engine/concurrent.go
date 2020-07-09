@@ -34,13 +34,14 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 	for _, r := range seeds {
 		e.Scheduler.Submit(r)
 	}
-
+	itemCount := 0
 	for {
 		//要把createWorker輸出的結果out收進來
 		result := <-out
 		//然後把每個out輸出的resultItem輸出
 		for _, item := range result.Items {
-			log.Printf("Got item: %v", item)
+			log.Printf("Got item #%d: %v", itemCount, item)
+			itemCount++
 		}
 		//然後把每個out輸出的resultRequest,丟給Scheduler
 		for _, request := range result.Requests {
@@ -61,6 +62,8 @@ func createWorker(in chan Request, out chan ParserResult) {
 				continue
 			}
 			//最後把result傳給out
+			//然後這個out channel 會把資料傳到Run裡面的result := <-out
+			//將資料打印和執行Scheduler.Submit
 			out <- result
 		}
 	}()

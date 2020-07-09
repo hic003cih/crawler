@@ -11,7 +11,7 @@ func main() {
 	e := engine.ConcurrentEngine{
 		//把Scheduler取出
 		Scheduler:   &scheduler.SimpleScheduler{},
-		WorkerCount: 10,
+		WorkerCount: 100,
 	}
 	e.Run(engine.Request{
 		//改用localhost生成的資料去執行
