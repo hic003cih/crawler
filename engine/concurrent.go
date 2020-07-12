@@ -14,16 +14,24 @@ type ConcurrentEngine struct {
 type Scheduler interface {
 	Submit(Request)
 	ConfigureMasterWorkerChan(chan Request)
+	WorkerReady(chan Request)
+	Run()
 }
 
 func (e *ConcurrentEngine) Run(seeds ...Request) {
 
 	//輸入,把Request傳入
-	in := make(chan Request)
+	//in := make(chan Request)
+
 	//輸出,ParseResult傳出
 	out := make(chan ParserResult)
+
 	//把in channel傳進去ConfigureWorkerChan
-	e.Scheduler.ConfigureMasterWorkerChan(in)
+	//e.Scheduler.ConfigureMasterWorkerChan(in)
+
+	//這邊改成用Scheduler裡的Run,來生成wokerChan和requestChan
+	//然後執行裡面的go func,等待任務的到來
+	e.Scheduler.Run()
 	for i := 0; i < e.WorkerCount; i++ {
 		//把輸入和輸出chan傳入
 		createWorker(in, out)
@@ -53,7 +61,10 @@ func createWorker(in chan Request, out chan ParserResult) {
 	//做一個go routine
 	go func() {
 		for {
-			//從in把值取出來
+			//告訴SCHEDULER我已經完成
+
+			//從in把值取出來,這個是一個worker的輸入
+			//輸入哪裡來?SCHEDULER選擇了你,就會給你發送數據
 			request := <-in
 			//呼叫worker來把request拆解
 			result, err := worker(request)
