@@ -10,7 +10,7 @@ func main() {
 	//爬蟲引擎執行
 	e := engine.ConcurrentEngine{
 		//把Scheduler取出
-		Scheduler:   &scheduler.SimpleScheduler{},
+		Scheduler:   &scheduler.QueuedScheduler{},
 		WorkerCount: 100,
 	}
 	e.Run(engine.Request{

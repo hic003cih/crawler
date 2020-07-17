@@ -11,11 +11,19 @@ type ConcurrentEngine struct {
 }
 
 //使用者定義Scheduler要什麼,然後你自己去實現
+//simple和queued都實現下面幾個功能,就可以自由切換了
 type Scheduler interface {
 	Submit(Request)
-	ConfigureMasterWorkerChan(chan Request)
-	WorkerReady(chan Request)
+	//我有一個worker要給我哪個schedule
+	WorkerChan() chan Request
 	Run()
+	//用組合的方式把ReadyNotifier抓近來
+	ReadyNotifier
+}
+
+//原本WorkerReady放在Scheduler裡面,太多功能了,所以把WorkerReady拉出來
+type ReadyNotifier interface {
+	WorkerReady(chan Request)
 }
 
 func (e *ConcurrentEngine) Run(seeds ...Request) {
@@ -33,8 +41,10 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 	//然後執行裡面的go func,等待任務的到來
 	e.Scheduler.Run()
 	for i := 0; i < e.WorkerCount; i++ {
-		//把輸入和輸出chan傳入
-		createWorker(in, out)
+		//把out channel和scheduler傳進去
+		//去跟e.scheduler要workchannel
+		//因為Scheduler也有ReadyNotifier,所以可以直接傳
+		createWorker(e.Scheduler.WorkerChan(), out, e.Scheduler)
 	}
 
 	//把每個Request傳到scheduler裡面
@@ -57,14 +67,20 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 		}
 	}
 }
-func createWorker(in chan Request, out chan ParserResult) {
+
+//只管從外面接收傳進來channel來造一個worker
+//然後自己建立一個channel
+//把後面自己拆出來的ReadyNotifier傳進區
+func createWorker(in chan Request, out chan ParserResult, ready ReadyNotifier) {
+
 	//做一個go routine
 	go func() {
 		for {
-			//告訴SCHEDULER我已經完成
-
+			//告訴SCHEDULER我自己的channel已經完成
+			ready.WorkerReady(in)
 			//從in把值取出來,這個是一個worker的輸入
 			//輸入哪裡來?SCHEDULER選擇了你,就會給你發送數據
+			//然後把in channel傳給request
 			request := <-in
 			//呼叫worker來把request拆解
 			result, err := worker(request)
