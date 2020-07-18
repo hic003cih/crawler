@@ -6,14 +6,17 @@ import (
 )
 
 //把City的url做常量使用
-const cityRe = `<a href="(http://localhost:8080/mock/album.zhenai.com/u/[0-9]+)"[^>]*>([^<]+)</a>`
+var (
+	profileRe = regexp.MustCompile(`<a href="(http://localhost:8080/mock/album.zhenai.com/u/[0-9]+)"[^>]*>([^<]+)</a>`)
+	cityUrlRe = regexp.MustCompile(`href="(http://localhost:8080/mock/www.zhenai.com/zhenghun/guangzhou/[^"]+)"`)
+)
 
 //返回package engine內的ParseResult types
 func ParseCity(contents []byte) engine.ParserResult {
 	//使用正則表達式把城市名稱取出
 	//正則表達式提取功能
 	//將所需要的部分用()框起來
-	re := regexp.MustCompile(cityRe)
+	//re := regexp.MustCompile(cityRe)
 
 	//FindAllString沒有辦法提取,
 	//改用FindAllStringSubmatch
@@ -21,7 +24,7 @@ func ParseCity(contents []byte) engine.ParserResult {
 	//每個匹配都佔一個項
 	//本身自己會佔一個,後面匹配的也會佔
 	//[55151@gmail.com 55151 gmail .com]
-	matches := re.FindAllSubmatch(contents, -1)
+	matches := profileRe.FindAllSubmatch(contents, -1)
 	result := engine.ParserResult{}
 	//把返回的二維打印出來
 	//完整的如下
@@ -42,6 +45,16 @@ func ParseCity(contents []byte) engine.ParserResult {
 			ParserFunc: func(c []byte) engine.ParserResult {
 				return ParseProfile(c, name)
 			},
+		})
+	}
+	//取第二頁的URL
+	matches = cityUrlRe.FindAllSubmatch(contents, -1)
+	for _, m := range matches {
+		//把URL用append存到Result中返回
+		result.Requests = append(result.Requests, engine.Request{
+			Url: string(m[1]),
+			//將取到的城市url傳到ParseCity func做解析
+			ParserFunc: ParseCity,
 		})
 	}
 
