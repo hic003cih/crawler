@@ -1,6 +1,9 @@
 package engine
 
-import "log"
+import (
+	"crawler/model"
+	"log"
+)
 
 type ConcurrentEngine struct {
 	//這邊都要大寫,因為是給外面的人用的
@@ -53,19 +56,21 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 
 		//檢查是否有重複
 		if isDuplicate(r.Url) {
-			log.Printf("Duplicate request:"+"%s", r.Url)
+			//log.Printf("Duplicate request:"+"%s", r.Url)
 			continue
 		}
 		e.Scheduler.Submit(r)
 	}
-	itemCount := 0
+	profileCount := 0
 	for {
 		//要把createWorker輸出的結果out收進來
 		result := <-out
 		//然後把每個out輸出的resultItem輸出
 		for _, item := range result.Items {
-			log.Printf("Got item #%d: %v", itemCount, item)
-			itemCount++
+			if _, ok := item.(model.Profile); ok {
+				log.Printf("Got item #%d: %v", profileCount, item)
+				profileCount++
+			}
 		}
 
 		//URL dedup
@@ -74,7 +79,7 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 		for _, request := range result.Requests {
 			//檢查是否有重複
 			if isDuplicate(request.Url) {
-				log.Printf("Duplicate request:"+"%s", request.Url)
+				//log.Printf("Duplicate request:"+"%s", request.Url)
 				continue
 			}
 			e.Scheduler.Submit(request)
@@ -111,13 +116,14 @@ func createWorker(in chan Request, out chan ParserResult, ready ReadyNotifier) {
 }
 
 //建造檢查url的hash map
-var visitedUrls = make( map[string])bool
+var visitedUrls = make(map[string]bool)
 
 func isDuplicate(url string) bool {
-	//如果傳入的url有在visitedUrls map內,
-	if visitedUrls[url]{
+	//如果傳入的url有在visitedUrls map內,返回true
+	if visitedUrls[url] {
 		return true
 	}
-	if visitedUrls[url] =true
+	//沒見過的話值存為true,然後返回false
+	visitedUrls[url] = true
 	return false
 }
