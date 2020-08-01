@@ -50,6 +50,12 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 	//把每個Request傳到scheduler裡面
 	//等in channel和out channel都傳入以後再submit
 	for _, r := range seeds {
+
+		//檢查是否有重複
+		if isDuplicate(r.Url) {
+			log.Printf("Duplicate request:"+"%s", r.Url)
+			continue
+		}
 		e.Scheduler.Submit(r)
 	}
 	itemCount := 0
@@ -61,8 +67,16 @@ func (e *ConcurrentEngine) Run(seeds ...Request) {
 			log.Printf("Got item #%d: %v", itemCount, item)
 			itemCount++
 		}
+
+		//URL dedup
+
 		//然後把每個out輸出的resultRequest,丟給Scheduler
 		for _, request := range result.Requests {
+			//檢查是否有重複
+			if isDuplicate(request.Url) {
+				log.Printf("Duplicate request:"+"%s", request.Url)
+				continue
+			}
 			e.Scheduler.Submit(request)
 		}
 	}
@@ -94,4 +108,16 @@ func createWorker(in chan Request, out chan ParserResult, ready ReadyNotifier) {
 			out <- result
 		}
 	}()
+}
+
+//建造檢查url的hash map
+var visitedUrls = make( map[string])bool
+
+func isDuplicate(url string) bool {
+	//如果傳入的url有在visitedUrls map內,
+	if visitedUrls[url]{
+		return true
+	}
+	if visitedUrls[url] =true
+	return false
 }
